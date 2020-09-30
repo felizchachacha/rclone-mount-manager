@@ -127,17 +127,21 @@ while [ ${#} -gt 0 ]; do
 			vim ${CONF_F} ${*}
 			${ME} backupconf
 		;;
+		'countprov')
+                        shift # past action
+			${ME} cat | awk '/type =/ {print $3}' | sort | uniq -c | sort -n
+		;;
 		'prov')
                         shift # past action
-			[[ ${1} == '' ]] && ${ME} cat | awk '/type =/ {print $3}' | sort | uniq -c && exit
+			[[ ${1} == '' ]] && ${ME} cat | awk -vRS='\n\n' -vFS='\\[|\n|\\]|=| '  '/type = / {print $7"\t"$2}' | sort
 			for searchval in ${*}; do
 				shift # past value
 				if [ -d ${searchval} ] && [[ $(dirname ${searchval}) == ${MNT_ROOT} ]]; then
 					${ME} prov $(basename ${searchval})
 				else
-					${ME} cat |  awk -vRS='[' -vFS='=|\t| |\n|]' -vOFS='' "/type = ${searchval}/ {print ${searchval}\t\$1} /^${searchval}\]/ {print ${searchval}\t\$6}"
+					${ME} cat |  awk -vRS='[' -vFS='=|\t| |\n|]' -vOFS='' "/type = ${searchval}/ {print \"${searchval}\t\"\$1} /^${searchval}\]/ {print \"${searchval}\t\"\$6}"
 				fi
-			done
+			done | sort
 		;;
 		'backupconf')
                         shift # past action
