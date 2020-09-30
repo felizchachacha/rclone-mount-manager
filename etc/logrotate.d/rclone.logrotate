@@ -1,0 +1,9 @@
+/var/log/rclone/*.log
+{
+    missingok
+    daily
+    copytruncate
+    maxsize 100k
+    rotate 1
+    notifempty
+}
