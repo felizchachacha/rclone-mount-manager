@@ -135,7 +135,7 @@ while [ ${#} -gt 0 ]; do
 				if [ -d ${searchval} ] && [[ $(dirname ${searchval}) == ${MNT_ROOT} ]]; then
 					${ME} prov $(basename ${searchval})
 				else
-					${ME} cat |  awk -vRS='[' -vFS='=|\t| |\n|]' -vOFS='' "/type = ${searchval}/ {print \$1} /^${searchval}\]/ {print \$6}"
+					${ME} cat |  awk -vRS='[' -vFS='=|\t| |\n|]' -vOFS='' "/type = ${searchval}/ {print ${searchval}\t\$1} /^${searchval}\]/ {print ${searchval}\t\$6}"
 				fi
 			done
 		;;
