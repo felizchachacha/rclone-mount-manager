@@ -103,13 +103,12 @@ while [ ${#} -gt 0 ]; do
 			else
 				declare -a MountedRemotes
 				for searchval in ${*}; do
+					shift # past value
 					if ${ME} prov | grep ${searchval}; then
-						shift # past value
 						for r in $(${ME} prov ${searchval}); do
-							${ME} df ${r} &
+							MountedRemotes+=(${r})
 						done
 					elif ${ME} mount | grep ${searchval}; then
-						shift # past value
 						MountedRemotes+=(${MNT_ROOT}/${searchval})
 					fi
 				done
