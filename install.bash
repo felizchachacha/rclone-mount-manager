@@ -12,8 +12,8 @@ pushd ${MYDIR}
 	if [[ "${MYDIR}" == "${TARGETD}" ]]; then
 		echo "${MYDIR} we are at the destination ${TARGETD}"
 	else
-		rsync -svauchHPxXlit --progress . "${TARGET}"/
+		rsync -svauchHPxXlit --progress . "${TARGET}"/ &
+		cp -rv --backup etc/* /etc/
 	fi
-
 
 popd
