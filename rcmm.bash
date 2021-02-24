@@ -5,14 +5,15 @@
 set -e
 
 readonly ME=$(realpath $0)
-readonly MYDIR=$(dirname ${ME})
+readonly MYREALDIR=$(dirname ${ME})
 readonly MNT_ROOT=/mnt/rclone
 readonly DEFS=(--fast-list)
 readonly CONF_F=~/.config/rclone/rclone.conf
-readonly CONF_BACKUP=/datos/git/storage/priv/rclone.conf
-readonly LOGS_D=/var/log/rclone
+readonly CONF_BACKUP=/var/backups/rclone.conf
+readonly LOGS_D=/var/tmp/log/rclone
+readonly CPUS=$(grep -c processor /proc/cpuinfo)
 readonly MNT_DEFS=( --vfs-cache-mode full --log-level INFO --cache-tmp-upload-path=/tmp/rclone/upload --cache-chunk-path=/tmp/rclone/chunks 
- --cache-workers=8 --cache-writes --cache-dir=/tmp/rclone/cachevfs --cache-db-path=/tmp/rclone/db --checkers=16 --daemon )
+ --cache-workers="${CPUS}" --cache-writes --cache-dir=/tmp/rclone/cachevfs --cache-db-path=/tmp/rclone/db --checkers="${CPUS}" --transfers --daemon "${CPUS}")
 
 
 function listmounts() {
@@ -23,14 +24,15 @@ function listmounts() {
 function mountone() {
 	local mnt_name=${1}
 	shift # past mount name
-	local presence=$((${ME} ps | grep -v bash; ${ME} mount) | grep ${mnt_name})
-	if [[ ${presence} != '' ]]; then
+	local presence=$(("${ME}" ps | grep -v bash; "${ME}" mount) | grep "${mnt_name}")
+	if [[ "${presence}" != '' ]]; then
 		echo "${mnt_name} already mounted:"
 		echo "${presence}"
 	else
-		[ -d ${LOGS_D} ] ||  mkdir ${LOGS_D}
-		logrotate /etc/logrotate.d/rclone.logrotate || rsync -uv --progress ${MYDIR}/etc/logrotate.d/rclone.logrotate /etc/logrotate.d/rclone.logrotate && logrotate /etc/logrotate.d/rclone.logrotate
-		rclone mount ${mnt_name}: ${MNT_ROOT}/${mnt_name} --log-file=${LOGS_D}/${mnt_name}.log ${MNT_DEFS[*]} ${DEFS[*]} ${*}
+		[ -d "${LOGS_D}" ] ||  mkdir -p "${LOGS_D}"
+		[ -d "${MNT_ROOT}/${mnt_name}" ] ||  mkdir -p "${MNT_ROOT}/${mnt_name}"
+		sudo logrotate /etc/logrotate.d/rclone.logrotate || sudo rsync -uv --progress "${MYREALDIR}"/etc/logrotate.d/rclone.logrotate /etc/logrotate.d/rclone.logrotate && sudo logrotate /etc/logrotate.d/rclone.logrotate
+		rclone mount "${mnt_name}:" "${MNT_ROOT}/${mnt_name}" --log-file="${LOGS_D}/${mnt_name}.log" ${MNT_DEFS[*]} ${DEFS[*]} ${*}
 	fi
 }
 
